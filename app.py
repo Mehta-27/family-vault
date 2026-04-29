@@ -90,21 +90,27 @@ def upload_file(file):
     return supabase.storage.from_("vault-documents").get_public_url(name)
 
 # ---------------- AUTH ----------------
-PASSWORD = "familyvault"
-
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if not st.session_state.auth:
     st.markdown("<div class='glass' style='max-width:400px;margin:120px auto;text-align:center;'>", unsafe_allow_html=True)
     st.markdown("## 🔐 Family Vault")
-    p = st.text_input("Passcode", type="password")
-    if st.button("Enter"):
-        if p == PASSWORD:
-            st.session_state.auth = True
-            st.rerun()
+    email = st.text_input("Email", placeholder="admin@family.com")
+    password = st.text_input("Password", type="password")
+    if st.button("Secure Login"):
+        if email and password:
+            try:
+                # Attempt to authenticate with Supabase
+                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                if res.user:
+                    st.session_state.auth = True
+                    st.rerun()
+            except Exception as e:
+                # Provide generic error for security
+                st.error("Invalid email or password.")
         else:
-            st.error("Wrong passcode")
+            st.warning("Please enter your email and password.")
     st.stop()
 
 # ---------------- HEADER ----------------
